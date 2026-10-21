@@ -1,0 +1,141 @@
+<main class="customers-page">
+    <header class="page-header">
+        <div>
+            <h1>Customers</h1>
+            <p>Manage and view your customer records.</p>
+        </div>
+
+        <button class="logout-button" type="button" (click)="logout()" [disabled]="isLoggingOut">
+            {{ isLoggingOut ? 'Logging out...' : 'Logout' }}
+        </button>
+    </header>
+
+    <section class="customer-panel">
+        <div class="panel-heading">
+            <h2>Create customer</h2>
+        </div>
+
+        <form #customerForm="ngForm" (ngSubmit)="createCustomer()">
+            <div class="form-field">
+                <label for="new-name">Name</label>
+                <input id="new-name" name="name" autocomplete="off" [(ngModel)]="newCustomer.name" required placeholder="Customer name" />
+            </div>
+
+            <div class="form-field">
+                <label for="new-email">Email</label>
+                <input id="new-email" name="email" type="email" autocomplete="off" [(ngModel)]="newCustomer.email" required email
+                    placeholder="customer@example.com" />
+            </div>
+
+            <div class="form-field">
+                <label for="new-phone">Phone (optional)</label>
+                <input id="new-phone" name="phone" autocomplete="off" [(ngModel)]="newCustomer.phone" placeholder="Phone number" />
+            </div>
+
+            <div class="form-field">
+                <label for="new-company">Company (optional)</label>
+                <input id="new-company" name="company" [(ngModel)]="newCustomer.company" placeholder="Company name" />
+            </div>
+
+            <button type="submit" [disabled]="customerForm.invalid || isCreating">
+                {{ isCreating ? 'Creating...' : 'Create customer' }}
+            </button>
+        </form>
+    </section>
+
+    <section class="customer-panel">
+        <div class="panel-heading">
+            <h2>Customer directory</h2>
+            <span>{{ customers.length }} customers</span>
+        </div>
+
+        <p *ngIf="isLoading" class="status-message">
+            Loading customers...
+        </p>
+
+        <p *ngIf="!isLoading && customers.length === 0" class="status-message">
+            No customers found.
+        </p>
+
+        <div class="table-wrapper" *ngIf="!isLoading && customers.length > 0">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Company</th>
+                        <th>Phone</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr *ngFor="let customer of customers" (click)="openCustomer(customer)"
+                        (keydown.enter)="openCustomer(customer)" tabindex="0" role="button"
+                        [attr.aria-label]="'View details for ' + customer.name">
+                        <td class="customer-name">{{ customer.name }}</td>
+                        <td>{{ customer.email }}</td>
+                        <td>{{ customer.company || '—' }}</td>
+                        <td>{{ customer.phone || '—' }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+<div class="modal-backdrop" *ngIf="isLoadingDetails || selectedCustomer" (click)="closeDetails()">
+    <section class="customer-modal" role="dialog" aria-modal="true" aria-labelledby="customer-modal-title"
+        (click)="$event.stopPropagation()">
+        <header class="modal-header">
+            <h2 id="customer-modal-title">Customer details</h2>
+            <button type="button" class="close-button" aria-label="Close customer details" (click)="closeDetails()">
+                &times;
+            </button>
+        </header>
+
+        <p *ngIf="isLoadingDetails" class="status-message">
+            Loading customer details...
+        </p>
+
+        <div *ngIf="selectedCustomer as customer" class="customer-details">
+            <div class="detail-row">
+                <span>Name</span>
+                <strong>{{ customer.name }}</strong>
+            </div>
+
+            <div class="detail-row">
+                <span>Email</span>
+                <strong>{{ customer.email }}</strong>
+            </div>
+
+            <div class="detail-row">
+                <span>Phone</span>
+                <strong>{{ customer.phone || 'Not provided' }}</strong>
+            </div>
+
+            <div class="detail-row">
+                <span>Company</span>
+                <strong>{{ customer.company || 'Not provided' }}</strong>
+            </div>
+
+            <div class="detail-row">
+                <span>Customer ID</span>
+                <strong class="customer-id">{{ customer.id }}</strong>
+            </div>
+
+            <div class="detail-row">
+                <span>Created</span>
+                <strong>{{ customer.createdAt | date:'medium' }}</strong>
+            </div>
+
+            <div class="detail-row">
+                <span>Last updated</span>
+                <strong>{{ customer.updatedAt | date:'medium' }}</strong>
+            </div>
+        </div>
+
+        <footer class="modal-footer" *ngIf="selectedCustomer">
+            <button type="button" (click)="closeDetails()">Close</button>
+        </footer>
+    </section>
+</div>
